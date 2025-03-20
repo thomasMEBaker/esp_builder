@@ -2,22 +2,31 @@ import os
 import subprocess
 import serial.tools.list_ports
 from pathlib import Path
+import sys
 
 #commands to make it work :
-#pyinstaller --onefile --hidden-import=esptool esp_builder.py
-#python -m PyInstaller --onefile --add-data "Blink.ino.bootloader.bin;." esp_builder.py
+#python -m PyInstaller --onefile --add-binary "Blink.ino.bootloader.bin;." --add-binary "Blink.ino.partitions.bin;." --add-binary "Blink.ino.bin;." --add-binary "boot_app0.bin;." esp_builder.py
+#https://pyinstaller.org/en/stable/usage.html
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
+
 
 # Firmware binary file
-bootloader = "Blink.ino.bootloader.bin"
-partitions = "Blink.ino.partitions.bin"
-boot_app0 = "C:\\Users\\Admin\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7/tools/partitions/boot_app0.bin"
-firmware = "Blink.ino.bin"
+bootloader = resource_path("Blink.ino.bootloader.bin")
+partitions = resource_path("Blink.ino.partitions.bin")
+boot_app0 = resource_path("boot_app0.bin")
+firmware = resource_path("Blink.ino.bin")
 
 # Check if the firmware file exists
 for file in [bootloader, partitions, boot_app0, firmware]:
     if not Path(file).exists():
         print(f"Error: Required file '{file}' not found. Please check the file name and location.")
-        exit(1)
+        sys.exit()
 
 # Function to detect ESP32 serial port
 def find_esp32_port():
